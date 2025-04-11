@@ -16,6 +16,13 @@ It is a texual admin interface for FinOps for Cloud, and it is not production re
 pip install git+https://github.com/softwareone-platform/fico
 ```
 
+# Run FiCo
+
+To run FiCo just type:
+
+```bash
+fico
+```
 
 
 ## License
