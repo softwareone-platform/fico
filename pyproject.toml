@@ -1,0 +1,107 @@
+[project]
+name = "fico"
+version = "0.1.0"
+description = "FinOps For Cloud Console"
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [
+    { name = "SoftwareOne AG"  }
+]
+
+license = {file = "LICENSE.txt"}
+requires-python = ">=3.12,<4"
+keywords = []
+
+
+dependencies = [
+    "httpx>=0.28.1",
+    "pycountry>=24.6.1",
+    "pytest-textual-snapshot>=1.1.0",
+    "requests>=2.32.3",
+    "textual[syntax]>=2.1.2",
+    "tree-sitter-rql>=0.1.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/softwareone-platform/fico"
+Documentation = "https://github.com/softwareone-platform/fico#readme"
+Repository = "https://github.com/softwareone-platform/fico.git"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+fico = "fico.app:app"
+
+[dependency-groups]
+dev = [
+    "ipython>=8.31.0",
+    "mypy>=1.15.0",
+    "pytest>=8.3.3,<9.0",
+    "pytest-asyncio>=0.24.0,<1.0",
+    "pytest-cov>=6.0.0,<7.0",
+    "pytest-httpx>=0.35.0",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.8.0,<1.0",
+    "textual-dev>=1.7.0",
+]
+
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+output-format = "full"
+cache-dir = ".cache/ruff"
+
+[tool.ruff.lint]
+select = [
+    "E",  # w errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade,
+    "PT",  # flake8-pytest-style
+    "T10",  # flake8-pytest-style
+]
+ignore = [
+    "PT001", # Use `@pytest.fixture()` over `@pytest.fixture`
+    "PT011", # pytest.raises({exception}) is too broad, set the match parameter or use a more specific exception
+    "PT023", # @pytest.mark.parametrize` is missing required arguments
+    "B008",  # do not perform function calls in argument defaults
+    "B904",  # Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+
+[tool.pytest.ini_options]
+testpaths = "tests/"
+pythonpath = "."
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+addopts = "--cov=fico --cov-report=term-missing --cov-report=html --cov-report=xml"
+cache_dir = ".cache/pytest"
+log_cli = true
+log_cli_level = "INFO"
+
+[tool.coverage.run]
+branch = true
+source = ["fico"]
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "pragma: no branch",
+    "pass",
+]
+
+[tool.mypy]
+warn_no_return = false
+ignore_missing_imports = true
+cache_dir = ".cache/mypy"

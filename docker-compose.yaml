@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  tests:
+    build: .
+    command: pytest -v 
+
+
+  bash:
+    build:
+      context: .
+    command: bash
+    stdin_open: true
+    tty: true
