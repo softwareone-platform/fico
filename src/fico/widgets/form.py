@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from textual import on
+from textual import on, log
 from textual.containers import Grid, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.message import Message
@@ -17,6 +17,9 @@ class FormItem(Grid):
         grid-columns: 1fr 3fr;
         height: 5;
         content-align: left middle;
+    }
+    FormItem.-hidden {
+        display: none;
     }
     FormItem > Label {
         height: 3;
@@ -100,6 +103,8 @@ class Form(Grid):
         is_valid = True
         data = {}
         for input in self.query(Input):
+            if input.disabled:
+                continue
             validation_result = input.validate(input.value)
             if validation_result and not validation_result.is_valid:
                 is_valid = False
@@ -112,11 +117,6 @@ class Form(Grid):
                 data[select.id] = str(select.value)
         if is_valid:
             self.post_message(self.Save(object_id=self.object_id, data=data))
-
-    # @on(Input.Blurred)
-    # def validate_input(self, event: Input.Blurred):
-    #     if not event.validation_result.is_valid:  # type: ignore
-    #         self.show_validation_error(event.input, event.validation_result)
 
     def watch_form_title(self, new_title: str) -> None:
         try:
@@ -141,7 +141,8 @@ class Form(Grid):
 
     def load(self, object_id: str, data: dict[str, Any]):
         self.object_id = object_id
+        log(data)
         for input_widget in self.query(Input):
             input_widget.value = data.get(input_widget.id, "")  # type: ignore
         for select_widget in self.query(Select):
-            select_widget.value = data.get(input_widget.id, "")  # type: ignore
+            select_widget.value = data.get(select_widget.id, "")  # type: ignore

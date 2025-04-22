@@ -15,7 +15,7 @@ from fico.utils import (
     handle_error_notification,
 )
 from fico.widgets.datagrid import DataGrid, DataGridColumn
-from fico.widgets.form import FormItem
+from fico.widgets.form import Form, FormItem
 from fico.widgets.view import View
 
 
@@ -69,10 +69,12 @@ class Organizations(View):
             FormItem(
                 Label("Currency"),
                 Select(CURRENCIES, id="currency"),
+                id="fi_currency",
             ),
             FormItem(
                 Label("Billing Currency"),
                 Select(CURRENCIES, id="billing_currency"),
+                id="fi_billing_currency",
             ),
             FormItem(
                 Label("Admin Name"),
@@ -82,6 +84,7 @@ class Organizations(View):
                     validate_on=[],
                     validators=[Length(minimum=1)],
                 ),
+                id="fi_admin_name",
             ),
             FormItem(
                 Label("Admin Email"),
@@ -91,9 +94,38 @@ class Organizations(View):
                     validate_on=[],
                     validators=[Length(minimum=1)],
                 ),
+                id="fi_admin_email",
             ),
         ]
 
+    async def prepare_add_form(self) -> None:
+        await super().prepare_add_form()
+        self.query_one("#fi_admin_name", FormItem).remove_class("-hidden")
+        self.query_one("#fi_admin_email", FormItem).remove_class("-hidden")
+        self.query_one("#fi_currency", FormItem).remove_class("-hidden")
+        self.query_one("#fi_billing_currency", FormItem).remove_class("-hidden")
+        self.query_one("#admin_name", Input).disabled = False
+        self.query_one("#admin_email", Input).disabled = False
+        self.query_one("#currency", Select).disabled = False
+        self.query_one("#billing_currency", Select).disabled = False
+
+    async def prepare_edit_form(self, selected) -> None:
+        await super().prepare_edit_form(selected)
+        self.query_one("#fi_admin_name", FormItem).add_class("-hidden")
+        self.query_one("#fi_admin_email", FormItem).add_class("-hidden")
+        self.query_one("#fi_currency", FormItem).add_class("-hidden")
+        self.query_one("#fi_billing_currency", FormItem).add_class("-hidden")
+        self.query_one("#admin_name", Input).disabled = True
+        self.query_one("#admin_email", Input).disabled = True
+        self.query_one("#currency", Select).disabled = True
+        self.query_one("#billing_currency", Select).disabled = True
+
+    def prepare_update_payload(self, data: dict[str, Any]) -> dict[str, Any]:
+        data.pop("admin_name", None)
+        data.pop("admin_email", None)
+        data.pop("currency", None)
+        data.pop("billing_currency", None)
+        return data
 
     @handle_error_notification("Error creating organization")
     async def create_object(self, payload: dict[str, Any]) -> dict[str, Any]:
