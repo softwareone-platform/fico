@@ -150,7 +150,11 @@ class View(Container):
 
     @handle_error_notification(f"Error retrieving {OBJECT_NAME}")
     async def perform_edit_action(self, selected):
-        await self.prepare_edit_form(selected)
+        obj = await self.prepare_edit_form(selected)
+        if not obj:
+            return
+        form = self.query_one(Form)
+        form.load(obj["id"], obj)
         self.show_form(f"Edit {self.OBJECT_NAME}: {selected['id']}")
 
     async def perform_delete_action(self, selected: dict[str, Any]) -> None:
@@ -179,12 +183,8 @@ class View(Container):
     async def prepare_add_form(self) -> None:
         pass
 
-    async def prepare_edit_form(self, selected) -> None:
-        obj = await self.get_object(selected["id"])
-        if not obj:
-            return
-        form = self.query_one(Form)
-        form.load(obj["id"], obj)
+    async def prepare_edit_form(self, selected) -> dict[str, Any] | None:
+        return await self.get_object(selected["id"])
 
     def get_available_actions(self, object: dict[str, Any]) -> dict[str, Action]:
         actions = {

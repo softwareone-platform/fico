@@ -143,6 +143,10 @@ class Form(Grid):
         self.object_id = object_id
         log(data)
         for input_widget in self.query(Input):
+            if input_widget.disabled:
+                continue
             input_widget.value = data.get(input_widget.id, "")  # type: ignore
         for select_widget in self.query(Select):
+            if select_widget.disabled:
+                continue
             select_widget.value = data.get(select_widget.id, "")  # type: ignore

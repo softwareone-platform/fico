@@ -2,6 +2,7 @@ from datetime import datetime
 from functools import partial
 from typing import Any
 
+from textual import log
 from textual.validation import Length
 from textual.widgets import Input, Label, Select, TabPane
 
@@ -85,7 +86,8 @@ class Users(View):
     def prepare_create_payload(self, data: dict[str, Any]) -> dict[str, Any]:
         account_id = data.pop("account")
         if self.current_account and self.current_account["type"] == "operations":
-            data["account"] = {"id": account_id},
+            data["account"] = {"id": account_id}
+        log(data)
         return data
 
 

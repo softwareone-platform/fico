@@ -267,12 +267,26 @@ class FFCOpsClient:
             return
         return response.json()
 
-    async def get_organization_employees(self, id: str, limit: int, offset: int):
+    async def get_organization_employees(self, id) -> dict[str, Any] | None:
         response = await self.client.get(
-            f"/organizations/{id}/employees?limit={limit}&offset={offset}",
+            f"/organizations/{id}/employees",
         )
         if response.status_code == 404:
-            return
+            return None
+
+        items = response.json()
+        return {
+            "total": len(items),
+            "items": items,
+        }
+
+    async def get_organization_datasources(self, id) -> dict[str, Any] | None:
+        response = await self.client.get(
+            f"/organizations/{id}/datasources",
+        )
+        if response.status_code == 404:
+            return None
+
         items = response.json()
         return {
             "total": len(items),

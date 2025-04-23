@@ -4,6 +4,7 @@ from typing import Any
 
 import pycountry
 from rich.text import Text
+from textual import log
 
 
 def format_by(event: dict[str, Any]) -> str:
@@ -50,6 +51,7 @@ def handle_error_notification(title: str):
             try:
                 return await func(self, *args, **kwargs)
             except Exception as e:
+                log(e)
                 self.notify_error(title, e)
 
         return wrapper

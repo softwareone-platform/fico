@@ -65,6 +65,7 @@ class DataGrid(Grid):
         columns: list[DataGridColumn],
         datasource: Callable[[int, int, str | None], Coroutine[None, None, dict[str, Any]]],
         actions: Callable[[dict[str, Any]], dict[str, Action]] | None = None,
+        pagination: bool = True,
         id=None,
         disabled=False,
         markup=True,
@@ -73,6 +74,7 @@ class DataGrid(Grid):
         self.columns = columns
         self.datasource = datasource
         self.actions = actions
+        self.pagination = pagination
         self.current_limit = 10
         self.current_offset = 0
         self.objects: dict[str, dict[str, Any]] = {}
@@ -81,7 +83,8 @@ class DataGrid(Grid):
 
     def compose(self) -> ComposeResult:
         yield DataTable(cursor_type="row", zebra_stripes=True)
-        yield Pagination().data_bind(DataGrid.total_rows)
+        if self.pagination:
+            yield Pagination().data_bind(DataGrid.total_rows)
 
     @work
     async def reload(self) -> None:
@@ -90,13 +93,12 @@ class DataGrid(Grid):
         self.loading = True
         logger.info(f"{self.__class__.__name__} reload")
         try:
-            data = await self.datasource(
-                self.current_limit,
-                self.current_offset,
-                self.rql_expression,
-            )
+            args = []
+            if self.pagination:
+                args = [self.current_limit, self.current_offset, self.rql_expression]
+            data = await self.datasource(*args)  # type: ignore
 
-            self.total_rows = data["total"]
+            self.total_rows = data.get("total", len(data.get("items", [])))
             table = self.query_one(DataTable)
             table.clear()
             self.selected_object = None
@@ -129,12 +131,16 @@ class DataGrid(Grid):
 
     @on(Pagination.Navigate)
     async def navigate(self, event: Pagination.Navigate) -> None:
+        if not self.pagination:
+            return
         self.current_limit = event.limit
         self.current_offset = event.offset
         logger.info(f"{self.__class__.__name__} navigate -> reload")
         self.reload()
 
     def reset(self, rql_expression: str | None = None) -> None:
+        if not self.pagination:
+            return
         self.rql_expression = rql_expression
         pagination = self.query_one(Pagination)
         pagination.current_offset = 0

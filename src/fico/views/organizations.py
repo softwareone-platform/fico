@@ -20,7 +20,6 @@ from fico.widgets.view import View
 
 
 class Organizations(View):
-
     OBJECT_NAME = "Organization"
     OBJECT_NAME_PLURAL = "Organizations"
     COLLECTION_NAME = "organizations"
@@ -109,8 +108,8 @@ class Organizations(View):
         self.query_one("#currency", Select).disabled = False
         self.query_one("#billing_currency", Select).disabled = False
 
-    async def prepare_edit_form(self, selected) -> None:
-        await super().prepare_edit_form(selected)
+    async def prepare_edit_form(self, selected: dict[str, Any]) -> dict[str, Any] | None:
+        obj = await super().prepare_edit_form(selected)
         self.query_one("#fi_admin_name", FormItem).add_class("-hidden")
         self.query_one("#fi_admin_email", FormItem).add_class("-hidden")
         self.query_one("#fi_currency", FormItem).add_class("-hidden")
@@ -119,6 +118,7 @@ class Organizations(View):
         self.query_one("#admin_email", Input).disabled = True
         self.query_one("#currency", Select).disabled = True
         self.query_one("#billing_currency", Select).disabled = True
+        return obj
 
     def prepare_update_payload(self, data: dict[str, Any]) -> dict[str, Any]:
         data.pop("admin_name", None)
@@ -144,14 +144,12 @@ class Organizations(View):
             {
                 **payload,
                 "user_id": employee["id"],
-            }
+            },
         )
         return organization
 
-
-
     def get_details_extra_panes(self, object: dict[str, Any]) -> list[TabPane]:
-        datsources_list = DataGrid(
+        employees_list = DataGrid(
             columns=[
                 DataGridColumn(title="ID", field="id"),
                 DataGridColumn(title="Name", field="display_name"),
@@ -159,50 +157,40 @@ class Organizations(View):
                 DataGridColumn(
                     title="Created At",
                     field="created_at",
-                    formatter=lambda d: datetime.fromisoformat(d).strftime(
-                        "%d/%m/%Y %H:%M:%S"
-                    ),
+                    formatter=lambda d: datetime.fromisoformat(d).strftime("%d/%m/%Y %H:%M:%S"),
                 ),
                 DataGridColumn(
                     title="Last login",
                     field="last_login",
-                    formatter=lambda d: datetime.fromisoformat(d).strftime(
-                        "%d/%m/%Y %H:%M:%S"
-                    ),
+                    formatter=lambda d: datetime.fromisoformat(d).strftime("%d/%m/%Y %H:%M:%S"),
                 ),
             ],
-            datasource=partial(self.api_client.get_organization_employees, object["id"]),
+            datasource=partial(self.api_client.get_organization_employees, object["id"]),  # type: ignore
+            pagination=False,
         )
-        datsources_list.reload()
+        employees_list.reload()
+
+        datasources_list = DataGrid(
+            columns=[
+                DataGridColumn(title="ID", field="id"),
+                DataGridColumn(title="Name", field="name"),
+                DataGridColumn(
+                    title="Resources Charged (this month)", field="resources_charged_this_month"
+                ),
+                DataGridColumn(
+                    title="Expenses to date (this month)", field="expenses_so_far_this_month"
+                ),
+                DataGridColumn(
+                    title="Expenses forecast (this month)", field="expenses_forecast_this_month"
+                ),
+                DataGridColumn(title="Parent datasource ID", field="parent_id"),
+            ],
+            datasource=partial(self.api_client.get_organization_datasources, object["id"]),  # type: ignore
+            pagination=False,
+        )
+        datasources_list.reload()
+
         return [
-            TabPane("Datasources", datsources_list),
-            # TabPane(
-            #     "Users",
-            #     DataGrid(
-            #         columns=[
-            #             DataGridColumn(title="ID", field="id"),
-            #             DataGridColumn(title="Name", field="name"),
-            #             DataGridColumn(title="Type", field="type"),
-            #             DataGridColumn(
-            #                 title="Status", field="account_user.status", formatter=format_status
-            #             ),
-            #             DataGridColumn(
-            #                 title="Invited",
-            #                 field="account_user.created_at",
-            #                 formatter=lambda d: datetime.fromisoformat(d).strftime(
-            #                     "%d/%m/%Y %H:%M:%S"
-            #                 ),
-            #             ),
-            #             DataGridColumn(
-            #                 title="Joined",
-            #                 field="account_user.joined_at",
-            #                 formatter=lambda d: datetime.fromisoformat(d).strftime(
-            #                     "%d/%m/%Y %H:%M:%S"
-            #                 ),
-            #             ),
-            #         ],
-            #         datasource=partial(self.api_client.get_user_accounts, object["id"]),
-            #         actions=self.get_user_account_actions,
-            #     ),
-            # )
+            TabPane("Datasources", datasources_list),
+            TabPane("Users", employees_list),
         ]

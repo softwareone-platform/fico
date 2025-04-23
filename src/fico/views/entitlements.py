@@ -48,13 +48,14 @@ class Entitlements(View):
             FormItem(
                 Label("Affiliate"),
                 Select([], id="owner", name="Affiliate"),
-                id="item-owner",
+                id="fi_owner",
             ),
         ]
 
     async def prepare_add_form(self):
         if self.current_account and self.current_account["type"] == "operations":
-            self.query_one("#item-owner", FormItem).remove_class("hidden")
+            self.query_one("fi_owner", FormItem).remove_class("-hidden")
+            self.query_one("#owner", Select).disabled = False
             rql = "and(eq(type,affiliate),eq(status,active))&order_by(name)"
             accounts = await self.api_client.get_all_objects("accounts", rql=rql)
             self.query_one("#owner", Select).set_options(
@@ -64,7 +65,15 @@ class Entitlements(View):
                 ]
             )
         else:
-            self.query_one("#item-owner", FormItem).add_class("hidden")
+            self.query_one("fi_owner", FormItem).add_class("-hidden")
+            self.query_one("#owner", Select).disabled = True
+
+    async def prepare_edit_form(self, selected: dict[str, Any]) -> dict[str, Any] | None:
+        obj = await super().prepare_edit_form(selected)
+        self.query_one("#fi_owner", FormItem).add_class("-hidden")
+        self.query_one("#owner", Select).disabled = True
+        return obj
+
 
     def get_available_actions(self, object: dict[str, Any]) -> dict[str, Action]:
         actions = super().get_available_actions(object)
