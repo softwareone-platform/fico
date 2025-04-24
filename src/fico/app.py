@@ -4,6 +4,7 @@ from textual.binding import Binding
 from fico.api import FFCOpsClient
 from fico.screens.login import LoginDialog
 from fico.screens.main import MainScreen
+from fico.utils import handle_error_notification
 
 
 class Fico(App):
@@ -46,8 +47,12 @@ class Fico(App):
                 login_data["email"], # type: ignore
                 login_data["password"], # type: ignore
             )
-        except Exception:
-            self.notify("Invalid credentials")
+        except Exception as e:
+            self.notify(
+                severity="error",
+                title="Error",
+                message=f"Invalid credentials: {e}",
+            )
             self.push_screen(LoginDialog(), self.login_or_quit)
             return
 
