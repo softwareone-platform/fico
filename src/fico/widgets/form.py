@@ -62,6 +62,7 @@ class Form(Grid):
         self,
         *children: Widget,
         form_title: str | None  = None,
+        save_button_label: str = "Save",
         name: str | None = None,
         id: str | None = None,
         classes: str | None = None,
@@ -71,6 +72,7 @@ class Form(Grid):
         super().__init__(name=name, id=id, classes=classes, disabled=disabled, markup=markup)
         self.form_content: list[Widget] = list(children) or []
         self.form_title = form_title or ""
+        self.save_button_label = save_button_label
         self.object_id: str | None = None
 
     @dataclass
@@ -86,7 +88,7 @@ class Form(Grid):
         with Vertical():
             yield from self.form_content
         with Horizontal(id="form-button"):
-            yield Button("Save", variant="primary", id="save")
+            yield Button(self.save_button_label, variant="primary", id="save")
             yield Button("Cancel", id="cancel")
 
     def compose_add_child(self, widget):
@@ -114,7 +116,7 @@ class Form(Grid):
                 data[input.id] = input.value
         for select in self.query(Select):
             if select.id:
-                data[select.id] = str(select.value)
+                data[select.id] = str(select.value) if not select.is_blank() else ""
         if is_valid:
             self.post_message(self.Save(object_id=self.object_id, data=data))
 

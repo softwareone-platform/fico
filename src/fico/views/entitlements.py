@@ -1,9 +1,11 @@
+from functools import partial
 from typing import Any
 
 from textual.validation import Length
 from textual.widgets import Input, Label, Select, TabPane
 
 from fico.screens.actions import Action
+from fico.screens.redeem import RedeemEntitlementDialog
 from fico.utils import format_at, format_by, format_object_label, format_status
 from fico.widgets.datagrid import DataGridColumn
 from fico.widgets.form import FormItem
@@ -85,7 +87,17 @@ class Entitlements(View):
                 handler=self.redeem_entitlement)
         return actions
 
-    async def redeem_entitlement(self, id):
+    async def redeem_entitlement(self, selected: dict[str, Any]):
+        orgs = await self.api_client.get_all_objects(
+            "organizations",
+            rql="eq(status,active)&order_by(name)",
+        )
+        self.app.push_screen(
+            RedeemEntitlementDialog(self.api_client, selected["id"], orgs),
+            partial(self.perform_redeem_entitlement_action, selected["id"]),
+        )
+
+    async def perform_redeem_entitlement_action(self, id: str, data: dict[str, Any] | None):
         pass
 
     def get_details_extra_panes(self, selected: dict[str, Any]) -> list[TabPane]:

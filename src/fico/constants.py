@@ -2,8 +2,6 @@ import pycountry
 
 from fico.utils import format_currency
 
-API_BASE_URL = "https://api.finops.s1.today/ops/v1"
-
 EXCLUDED_CURRENCIES = [
     "XAU",  # gold
     "XAG",  # silver

@@ -38,6 +38,7 @@ class Organizations(View):
                 title="Billing Currency", field="billing_currency", formatter=format_currency
             ),
             DataGridColumn(title="Operations ID", field="operations_external_id"),
+            DataGridColumn(title="Linked Organization ID", field="linked_organization_id"),
             DataGridColumn(title="Status", field="status", formatter=format_status),
             DataGridColumn(title="Created at", field="events.created", formatter=format_at),
             DataGridColumn(title="Created by", field="events.created", formatter=format_by),
