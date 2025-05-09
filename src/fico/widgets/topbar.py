@@ -60,7 +60,7 @@ class TopBar(Horizontal):
         yield Label(self.title, id="title")
         yield FilterBar(help_text=self.rql_help, disabled=not self.support_rql)
         yield Button("Add", variant="primary", id="add", disabled=self.add_disabled)
-        yield Button("\u2630", id="actions", disabled=True)
+        yield Button("\u2263", id="actions", disabled=True)
 
 
     @on(Button.Pressed)
