@@ -56,7 +56,7 @@ class Entitlements(View):
 
     async def prepare_add_form(self):
         if self.current_account and self.current_account["type"] == "operations":
-            self.query_one("fi_owner", FormItem).remove_class("-hidden")
+            self.query_one("#fi_owner", FormItem).remove_class("-hidden")
             self.query_one("#owner", Select).disabled = False
             rql = "and(eq(type,affiliate),eq(status,active))&order_by(name)"
             accounts = await self.api_client.get_all_objects("accounts", rql=rql)
