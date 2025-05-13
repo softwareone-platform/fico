@@ -27,6 +27,8 @@ class TopBar(Horizontal):
     }
     #actions {
         margin-top: 1;
+        margin-right: 1;
+        margin-left: 1;
         min-width: 5;
     }
     """
