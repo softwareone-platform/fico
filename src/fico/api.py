@@ -165,6 +165,20 @@ class FFCOpsClient:
         self.config.set_last_used_account(data["account"])
         self.set_credentials(data["access_token"], data["refresh_token"])
 
+    @api_error_formatter()
+    async def accept_invitation(self, base_url: str, user: str, token: str, password: str) -> None:
+        self.client = AsyncClient(
+            base_url=base_url,
+            auth=FFCOpsAuth(f"{base_url}/auth/tokens", self),
+        )
+        await self.fetch_specs()
+        response = await self.client.post(
+            f"/users/{user}/accept-invitation",
+            json={"invitation_token": token, "password": password},
+            auth=None,  # type: ignore
+        )
+        response.raise_for_status()
+
     async def get_current_user_accounts(self) -> list[dict[str, Any]]:
         user = self.config.get_user()
         return await self.get_all_objects(f"users/{user['id']}/accounts")
