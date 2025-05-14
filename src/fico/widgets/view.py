@@ -233,7 +233,7 @@ class View(Container):
 
     async def delete_object(self, object: dict[str, Any]) -> None:
         try:
-            await self.api_client.delete_object(self.get_collection_name(), id)
+            await self.api_client.delete_object(self.get_collection_name(), object["id"])
         except Exception as e:
             self.notify_error(f"Error deleting {self.OBJECT_NAME}", e)
             return
