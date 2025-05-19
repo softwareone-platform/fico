@@ -4,9 +4,11 @@ from typing import Any
 
 from textual import log
 from textual.validation import Length
+from textual.reactive import Reactive, reactive
 from textual.widgets import Input, Label, Select, TabPane
 
 from fico.screens.actions import Action
+from fico.screens.invitation import InvitationDialog
 from fico.utils import format_at, format_by, format_object_label, format_status
 from fico.widgets.datagrid import DataGrid, DataGridColumn
 from fico.widgets.form import Form, FormItem
@@ -17,6 +19,8 @@ class Users(View):
     OBJECT_NAME = "User"
     OBJECT_NAME_PLURAL = "Users"
     COLLECTION_NAME = "users"
+
+    current_user: Reactive[dict[str, Any] | None] = reactive(None, bindings=True)
 
     async def prepare_add_form(self) -> None:
         if self.current_account and self.current_account["type"] == "operations":
@@ -104,16 +108,58 @@ class Users(View):
         )
 
     def get_user_account_actions(self, object: dict[str, Any]) -> dict[str, Action]:
-        return {
+        actions = {
             "remove": Action(
                 id="remove",
                 label="Remove",
                 handler=partial(self.remove_user_from_account, object["id"]),
             )
         }
+        if object["account_user"]["status"] == "invited":
+            actions["accept_invitation"] = Action(
+                id="accept_invitation",
+                label="Accept invitation",
+                handler=self.accept_pending_invitation,
+                disabled=not self.check_user_for_accept(object["account_user"]),
+            )
+
+        return actions
 
     async def remove_user_from_account(self, user_id: str, account: dict[str, Any]) -> None:
         pass
+
+    async def accept_pending_invitation(self, account: dict[str, Any]) -> None:
+        self.app.push_screen(InvitationDialog(new_user=False), self.accept_invitation)
+
+    def check_user_for_accept(self, user: dict[str, Any]) -> bool:
+        if self.current_user and self.current_user["id"] == user["user"]["id"]:
+            return True
+        return False
+
+    async def accept_invitation(self, invitation_data: dict[str, str] | None) -> None:
+        if not invitation_data:
+            return
+        try:
+            await self.api_client.execute_object_action(
+                collection=self.get_collection_name(),
+                method="POST",
+                id=self.current_user["id"],
+                action="accept-invitation",
+                payload={"invitation_token": invitation_data["token"]},
+            )
+            self.query_one(DataGrid).reload()
+            self.notify(
+                title="Success",
+                message="Invitation successfully accepted",
+            )
+            self.app.pop_screen()
+        except Exception as e:
+            self.notify(
+                severity="error",
+                title="Error",
+                message=f"Error accepting invitation: {e}",
+            )
+            return
 
     def get_details_extra_panes(self, object: dict[str, Any]) -> list[TabPane]:
         if self.current_account and self.current_account["type"] == "affiliate":

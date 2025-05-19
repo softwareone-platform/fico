@@ -4,6 +4,8 @@ from textual.containers import Grid
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Select
 
+from fico.constants import APIS, DEFAULT_API
+
 
 class InvitationDialog(ModalScreen[dict[str, str] | None]):
     CSS = """
@@ -20,6 +22,20 @@ class InvitationDialog(ModalScreen[dict[str, str] | None]):
         height: 24;
         border: thick $background 80%;
         background: $surface;
+    }
+    
+     /* Full form for a new user */
+    .new_user {
+        grid-size: 2 6;
+        grid-rows: 1fr 1fr 1fr 1fr 1fr 3;
+        height: 24;
+    }
+
+    /* Just token to accept invitation */
+    .existing_user {
+        grid-size: 2 3;
+        grid-rows: 1fr 1fr 3;
+        height: 12;
     }
 
     #title {
@@ -38,36 +54,35 @@ class InvitationDialog(ModalScreen[dict[str, str] | None]):
     }
     """
 
-    def __init__(self, invitation_data: dict[str, str] | None = None):
+    def __init__(self, invitation_data: dict[str, str] | None = None, new_user: bool = True) -> None:
         super().__init__()
-        self.invitation_data = invitation_data or {}
+        invitation_data = invitation_data or {}
+        self.new_user = new_user
+
+        if self.new_user:
+            self.rows = [
+                Select(
+                    options=APIS,
+                    id="url",
+                    value=invitation_data.get("url", DEFAULT_API),
+                ),
+                Input(placeholder="User", id="user", value=invitation_data.get("user")),
+                Input(placeholder="Invitation token", id="token", value=invitation_data.get("token")),
+                Input(placeholder="Password", id="password", value=invitation_data.get("password"), password=True),
+            ]
+        else:
+            self.rows = [
+                Input(placeholder="Invitation token", id="token", value=invitation_data.get("token")),
+            ]
 
     def compose(self) -> ComposeResult:
         yield Grid(
             Label("FinOps For Cloud Accept Invitation", id="title"),
-            Select(
-                options=[
-                    (
-                        "https://cloudspend.velasuci.com/ops/v1",
-                        "https://cloudspend.velasuci.com/ops/v1",
-                    ),
-                    ("https://api.finops.s1.today/ops/v1", "https://api.finops.s1.today/ops/v1"),
-                    ("https://api.finops.s1.show/ops/v1", "https://api.finops.s1.show/ops/v1"),
-                    ("https://api.finops.s1.live/ops/v1", "https://api.finops.s1.live/ops/v1"),
-                    (
-                        "https://api.finops.softwareone.com/ops/v1",
-                        "https://api.finops.softwareone.com/ops/v1",
-                    ),
-                ],
-                id="url",
-                value=self.invitation_data.get("url", "https://api.finops.softwareone.com/ops/v1"),
-            ),
-            Input(placeholder="User", id="user", value=self.invitation_data.get("user")),
-            Input(placeholder="Invitation token", id="token", value=self.invitation_data.get("token")),
-            Input(placeholder="Password", id="password", value=self.invitation_data.get("password"), password=True),
+            *self.rows,
             Button("Accept", variant="primary", id="accept"),
             Button("Cancel", id="cancel"),
             id="dialog",
+            classes="new_user" if self.new_user else "existing_user",
         )
 
     @on(Input.Submitted)
@@ -76,19 +91,23 @@ class InvitationDialog(ModalScreen[dict[str, str] | None]):
         if event.input.id == "user":
             self.query_one("#token", Input).focus()
         elif event.input.id == "token":
-            self.query_one("#password", Input).focus()
+            if self.new_user:
+                self.query_one("#password", Input).focus()
+            else:
+                self.query_one("#accept", Button).press()
         elif event.input.id == "password":
             self.query_one("#accept", Button).press()
 
     @on(Button.Pressed, "#accept")
     def on_button_pressed(self, event: Button.Pressed) -> None:
         event.stop()
-        url = self.query_one("#url", Select).value
-        user = self.query_one("#user", Input).value
-        token = self.query_one("#token", Input).value
-        password = self.query_one("#password", Input).value
 
-        if not (url and user and token and password):
+        data = {"token": self.query_one("#token", Input).value}
+        if self.new_user:
+             for field, selector in [("url", Select), ("user", Input), ("password", Input)]:
+                 data[field] = self.query_one(f"#{field}", selector).value
+
+        if not all(data.values()):
             self.app.notify(
                 severity="warning",
                 title="Invitation validation error",
@@ -96,9 +115,9 @@ class InvitationDialog(ModalScreen[dict[str, str] | None]):
             )
             return
 
-        self.dismiss({"url": url, "user": user, "token": token, "password": password})  # type: ignore
+        self.dismiss(data)
 
     @on(Button.Pressed, "#cancel")
     def on_cancel(self, event: Button.Pressed) -> None:
         event.stop()
-        self.dismiss(None)  # type: ignore
+        self.dismiss(None)
