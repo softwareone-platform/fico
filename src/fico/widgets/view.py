@@ -53,6 +53,7 @@ class View(Container):
         self.api_client = api_client
         self.edit_disabled = False
         self.current_account: dict[str, Any] | None = None
+        self.current_user: dict[str, Any] | None = None
 
     @classmethod
     def get_collection_name(cls) -> str:

@@ -4,6 +4,8 @@ from textual.containers import Grid
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, Select, Static
 
+from fico.constants import APIS, DEFAULT_API
+
 
 class LoginDialog(ModalScreen[dict[str, str] | None]):
     CSS = """
@@ -50,21 +52,9 @@ class LoginDialog(ModalScreen[dict[str, str] | None]):
         yield Grid(
             Label("FinOps For Cloud Login", id="title"),
             Select(
-                options=[
-                    (
-                        "https://cloudspend.velasuci.com/ops/v1",
-                        "https://cloudspend.velasuci.com/ops/v1",
-                    ),
-                    ("https://api.finops.s1.today/ops/v1", "https://api.finops.s1.today/ops/v1"),
-                    ("https://api.finops.s1.show/ops/v1", "https://api.finops.s1.show/ops/v1"),
-                    ("https://api.finops.s1.live/ops/v1", "https://api.finops.s1.live/ops/v1"),
-                    (
-                        "https://api.finops.softwareone.com/ops/v1",
-                        "https://api.finops.softwareone.com/ops/v1",
-                    ),
-                ],
+                options=APIS,
                 id="url",
-                value="https://api.finops.softwareone.com/ops/v1",
+                value=DEFAULT_API,
             ),
             Input(placeholder="Email", id="email"),
             Input(placeholder="Password", id="password", password=True),

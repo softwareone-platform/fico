@@ -5,7 +5,6 @@ from fico.api import FFCOpsClient
 from fico.screens.invitation import InvitationDialog
 from fico.screens.login import LoginDialog
 from fico.screens.main import MainScreen
-from fico.utils import handle_error_notification
 
 
 class Fico(App):
@@ -65,17 +64,17 @@ class Fico(App):
         self.push_screen(LoginDialog(), self.login_or_quit)
 
     def action_accept_invitation(self) -> None:
-        self.app.push_screen(InvitationDialog(), self.accept_invitation)
+        self.app.push_screen(InvitationDialog(new_user=True), self.accept_invitation)
 
     async def accept_invitation(self, invitation_data: dict[str, str] | None) -> None:
         if not invitation_data:
             return
         try:
             await self.api_client.accept_invitation(
-                invitation_data["url"], # type: ignore
-                invitation_data["user"], # type: ignore
-                invitation_data["token"], # type: ignore
-                invitation_data["password"], # type: ignore
+                invitation_data["url"],
+                invitation_data["user"],
+                invitation_data["token"],
+                invitation_data["password"],
             )
 
             self.notify(

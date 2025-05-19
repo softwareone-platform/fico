@@ -80,7 +80,9 @@ class MainScreen(Screen):
                 )
                 yield Entitlements(self.api_client, id="entitlements")
                 yield Charges(self.api_client, id="charges")
-                yield Users(self.api_client, id="users")
+                yield Users(self.api_client, id="users").data_bind(
+                    current_user=MainScreen.current_user,
+                )
                 yield Systems(self.api_client, id="systems")
         yield Footer()
 
