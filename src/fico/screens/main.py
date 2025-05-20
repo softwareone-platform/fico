@@ -10,7 +10,7 @@ from textual.widgets import ContentSwitcher, Footer, Header
 
 from fico.api import FFCOpsClient
 from fico.screens.accounts import AccountSwitcher
-from fico.utils import format_object_label
+from fico.utils import format_object_label, handle_error_notification
 from fico.views.accounts import Accounts
 from fico.views.charges import Charges
 from fico.views.entitlements import Entitlements
@@ -103,6 +103,7 @@ class MainScreen(Screen):
             self.switch_account,
         )
 
+    @handle_error_notification(f"Error switching account")
     async def switch_account(self, account):
         if not account:
             return

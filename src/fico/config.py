@@ -36,6 +36,7 @@ class Config:
 
     def set_user(self, user: dict[str, Any]) -> None:
         self.config["user"] = user
+        self.save_config()
 
     def get_user(self) -> dict[str, Any]:
         return self.config["user"]
