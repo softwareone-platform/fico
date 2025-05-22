@@ -32,6 +32,7 @@ class RedeemEntitlementDialog(ModalScreen[dict[str, Any]]):
         self.api_client = api_client
         self.entitlement_id = entitlement_id
         self.organizations = organizations
+        self.datasources = []
 
     def compose(self) -> ComposeResult:
         with Form(
@@ -55,13 +56,17 @@ class RedeemEntitlementDialog(ModalScreen[dict[str, Any]]):
     async def on_organization_changed(self, event: Select.Changed) -> None:
         log("Organization changed", event.value)
         ds_dropdown = self.query_one("#datasource", Select)
+        ds_dropdown.loading = True
         datasources = await self.api_client.get_organization_datasources(event.value)
+        ds_dropdown.loading = False
         if not datasources:
             return
+        datasources = datasources["items"]
 
         ds_dropdown.set_options(
-            [(format_object_label(ds), ds["id"]) for ds in datasources["items"]]
+            [(format_object_label(ds), ds["id"]) for ds in datasources]
         )
+        self.datasources = {ds["id"]: ds for ds in datasources}
 
     @on(Form.Save)
     def do_redeem(self, event: Form.Save) -> None:
@@ -80,7 +85,10 @@ class RedeemEntitlementDialog(ModalScreen[dict[str, Any]]):
                 message="Please select a datasource.",
             )
             return
-        self.dismiss(event.data)
+        self.dismiss({
+            "organization": event.data["organization"],
+            "datasource": self.datasources[event.data["datasource"]],
+        })
 
     @on(Form.Cancel)
     def do_cancel(self, event: Form.Cancel) -> None:

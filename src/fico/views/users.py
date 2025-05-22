@@ -23,7 +23,7 @@ class Users(View):
     current_user: Reactive[dict[str, Any] | None] = reactive(None, bindings=True)
 
     async def prepare_add_form(self) -> None:
-        if self.current_account and self.current_account["type"] == "operations":
+        if self.is_operations_account:
             self.query_one("#item-account", FormItem).remove_class("hidden")
             rql = "eq(status,active)&order_by(name)"
             accounts = await self.api_client.get_all_objects("accounts", rql=rql)
@@ -89,7 +89,7 @@ class Users(View):
 
     def prepare_create_payload(self, data: dict[str, Any]) -> dict[str, Any]:
         account_id = data.pop("account")
-        if self.current_account and self.current_account["type"] == "operations":
+        if self.is_operations_account:
             data["account"] = {"id": account_id}
         log(data)
         return data
@@ -162,7 +162,7 @@ class Users(View):
             return
 
     def get_details_extra_panes(self, object: dict[str, Any]) -> list[TabPane]:
-        if self.current_account and self.current_account["type"] == "affiliate":
+        if self.is_affiliate_account:
             return []
         accounts_list = DataGrid(
             columns=[

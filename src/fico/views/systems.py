@@ -22,7 +22,7 @@ class Systems(View):
     COLLECTION_NAME = "systems"
 
     async def prepare_add_form(self) -> None:
-        if self.current_account and self.current_account["type"] == "operations":
+        if self.is_operations_account:
             self.query_one("#item-owner", FormItem).remove_class("hidden")
             rql = "eq(status,active)&order_by(name)"
             accounts = await self.api_client.get_all_objects("accounts", rql=rql)
@@ -68,7 +68,7 @@ class Systems(View):
 
     def prepare_create_payload(self, data: dict[str, Any]) -> dict[str, Any]:
         owner = data.pop("owner")
-        if self.current_account and self.current_account["type"] == "operations":
+        if self.is_operations_account:
             data["owner"] = {"id": owner}
         return data
 
