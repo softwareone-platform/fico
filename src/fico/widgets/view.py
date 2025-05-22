@@ -299,3 +299,11 @@ class View(Container):
 
     def notify_deleted_success(self, object: dict[str, Any]) -> None:
         self.notify_success(object, "deleted")
+
+    @property
+    def is_operations_account(self):
+        return self.current_account and self.current_account["type"] == "operations"
+
+    @property
+    def is_affiliate_account(self):
+        return self.current_account and self.current_account["type"] == "affiliate"
