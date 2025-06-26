@@ -12,7 +12,6 @@ from fico.api import FFCOpsClient
 from fico.screens.accounts import AccountSwitcher
 from fico.utils import format_object_label, handle_error_notification
 from fico.views.accounts import Accounts
-from fico.views.charges import Charges
 from fico.views.entitlements import Entitlements
 from fico.views.organizations import Organizations
 from fico.views.systems import Systems
@@ -33,7 +32,6 @@ class MainScreen(Screen):
         Binding(Keys.ControlA, "show_accounts()", "Affiliates", show=False),
         Binding(Keys.ControlO, "show_organizations()", "Organizations", show=False),
         Binding(Keys.ControlE, "show_entitlements()", "Entitlements", show=False),
-        Binding(Keys.ControlG, "show_charges()", "Charges", show=False),
         Binding(Keys.ControlU, "show_users()", "Users", show=False),
         Binding(Keys.ControlT, "show_systems()", "Tokens", show=False),
         Binding("s", "switch_account()", "Switch account"),
@@ -79,7 +77,6 @@ class MainScreen(Screen):
                     disabled=self.current_account["type"] != "operations",
                 )
                 yield Entitlements(self.api_client, id="entitlements")
-                yield Charges(self.api_client, id="charges")
                 yield Users(self.api_client, id="users").data_bind(
                     current_user=MainScreen.current_user,
                 )
@@ -159,5 +156,3 @@ class MainScreen(Screen):
     def action_show_systems(self):
         self.query_one(ContentSwitcher).current = "systems"
 
-    def action_show_charges(self):
-        self.query_one(ContentSwitcher).current = "charges"

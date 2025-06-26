@@ -7,7 +7,7 @@ from asyncio import Semaphore
 from collections.abc import AsyncGenerator
 from typing import Any
 
-from httpx import AsyncClient, Auth, HTTPError, HTTPStatusError, Request, Response, codes
+from httpx import AsyncClient, Auth, HTTPError, HTTPStatusError, Request, Response, Timeout, codes
 from textual import log
 
 from fico.config import Config
@@ -96,6 +96,7 @@ class FFCOpsClient:
         self.client = AsyncClient(
             base_url=self.config.get_url(),
             auth=FFCOpsAuth(f"{self.config.get_url()}/auth/tokens", self),
+            timeout=Timeout(connect=0.25, read=30.0, write=2.0, pool=5.0),
         )
 
     def get_url(self) -> str:

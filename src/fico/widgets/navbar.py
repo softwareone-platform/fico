@@ -59,7 +59,6 @@ class NavBar(Container):
             yield ListItem(Rule(line_style="heavy"), disabled=True, id="rule")
             yield ListItem(Label("Billing", classes="group-header"), disabled=True)
             yield ListItem(Label("Entitlements", classes="menu-item"), id="entitlements")
-            yield ListItem(Label("Charges", classes="menu-item"), id="charges")
             yield ListItem(Rule(line_style="heavy"), disabled=True)
             yield ListItem(Label("Settings", classes="group-header"), disabled=True)
             yield ListItem(Label("Users", classes="menu-item"), id="users")
