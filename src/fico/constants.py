@@ -23,8 +23,8 @@ CURRENCIES = [
 ]
 APIS = [
     (
-        "https://cloudspend.velasuci.com/ops/v1",
-        "https://cloudspend.velasuci.com/ops/v1",
+        "https://ffcdev.velasuci.com/ops/v1",
+        "https://ffcdev.velasuci.com/ops/v1",
     ),
     (
         "https://api.finops.s1.today/ops/v1",

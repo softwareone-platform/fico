@@ -30,7 +30,7 @@ class LoginDialog(ModalScreen[dict[str, str] | None]):
         width: 1fr;
         content-align: center middle;
     }
-    
+
     #invitation {
         content-align: center middle;
         column-span: 2;

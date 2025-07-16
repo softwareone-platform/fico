@@ -96,7 +96,7 @@ class FFCOpsClient:
         self.client = AsyncClient(
             base_url=self.config.get_url(),
             auth=FFCOpsAuth(f"{self.config.get_url()}/auth/tokens", self),
-            timeout=Timeout(connect=0.25, read=30.0, write=2.0, pool=5.0),
+            timeout=Timeout(connect=1, read=60.0, write=2.0, pool=5.0),
         )
 
     def get_url(self) -> str:
